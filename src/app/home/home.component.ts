@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Course } from "../model/course";
 import { Observable, noop } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, shareReplay, tap } from 'rxjs/operators';
 import { createHttpObservable } from '../common/util';
 
 
@@ -18,18 +18,20 @@ export class HomeComponent implements OnInit {
     }
 
     ngOnInit() {
-      const http$ = createHttpObservable('/api/courses');
+      const http$: Observable<Course[]> = createHttpObservable('/api/courses');
 
-      const courses$: Observable<Course[]> = http$.pipe(
-        map(res => Object.values(res['payload']))
+      const courses$ = http$.pipe(
+        tap(() => console.log('http request executed')),
+        map(res => Object.values(res['payload'])),
+        shareReplay()
       );
 
       this.beginnersCourses$ = courses$.pipe(
-        map(courses => courses.filter(course => course.category === 'BEGINNER'))
+        map((courses: Course[]) => courses.filter(course => course.category === 'BEGINNER'))
       );
 
       this.advancedCourses$ = courses$.pipe(
-        map(courses => courses.filter(course => course.category === 'ADVANCED'))
+        map((courses: Course[]) => courses.filter(course => course.category === 'ADVANCED'))
       );
     }
 }
