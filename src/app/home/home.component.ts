@@ -26,7 +26,6 @@ export class HomeComponent implements OnInit {
       
       courses$.subscribe(
         (courses: Course[]) => {
-          console.log('courses = ', courses)
           this.beginnersCourses = courses.filter(course => course.category === 'BEGINNER')
           this.advancedCourses = courses.filter(course => course.category === 'ADVANCED')
         },
