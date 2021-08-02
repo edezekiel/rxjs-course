@@ -6,13 +6,13 @@ export function createHttpObservable(url: string): Observable<any> {
     const signal = controller.signal;
 
     fetch(url, { signal })
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : observer.error('Request failed: ' + res.status))
       .then(body => {
         observer.next(body);
         observer.complete();
       })
       .catch(err => observer.error(err));
-      
+
     return () => controller.abort();
   });
 }
