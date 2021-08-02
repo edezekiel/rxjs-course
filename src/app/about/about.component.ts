@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { concat, fromEvent, interval, of, timer, merge } from 'rxjs';
 import { map, take } from 'rxjs/operators';
+import { createHttpObservable } from '../common/util';
 @Component({
   selector: 'about',
   templateUrl: './about.component.html',
@@ -11,11 +12,21 @@ export class AboutComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    // cancel - abort controller
+    const http$ = createHttpObservable('/api/courses');
+    const sub = http$.subscribe(console.log);
+    setTimeout(() => sub.unsubscribe(), 0);
+
+    // cancel
+    const intervalx$ = interval(1000);
+    const sub1 = intervalx$.subscribe(console.log);
+    setTimeout(() => sub1.unsubscribe(), 5000);
+
     // merge operator
     const interval1$ = interval(1000);
     const interval2$ = interval1$.pipe(map(val => 10 * val));
     const mergeResult$ = merge(interval1$, interval2$);
-    mergeResult$.pipe(take(10)).subscribe(console.log);
+    // mergeResult$.pipe(take(10)).subscribe(console.log);
 
     // concat operator
     const source1$ = of([1, 2, 3]);
