@@ -3,7 +3,7 @@ import { Observable, BehaviorSubject } from "rxjs";
 import { map, tap } from "rxjs/operators";
 import { Course } from "../model/course";
 import { createHttpObservable } from "../common/util";
-import { fromPromise } from 'rxjs/internal-compatibility';
+import { fromPromise } from "rxjs/internal-compatibility";
 
 @Injectable({
   providedIn: "root",
@@ -18,44 +18,54 @@ export class Store {
   init() {
     const http$: Observable<any> = createHttpObservable("/api/courses");
 
-    http$.pipe(
-      tap(() => console.log("HTTP request executed")),
-      map((res) => Object.values(res["payload"])),
-    ).subscribe((courses: Course[]) => this.subject.next(courses));
+    http$
+      .pipe(
+        tap(() => console.log("HTTP request executed")),
+        map((res) => Object.values(res["payload"]))
+      )
+      .subscribe((courses: Course[]) => this.subject.next(courses));
   }
 
   selectBeginnerCourses() {
-    return this.filterByCategory('BEGINNER')
+    return this.filterByCategory("BEGINNER");
   }
 
   selectAdvancedCourses() {
-    return this.filterByCategory('ADVANCED')
+    return this.filterByCategory("ADVANCED");
+  }
+
+  selectCourseById(courseId: number) {
+    return this.courses$.pipe(
+      map((courses) => courses.find((course) => course.id === courseId))
+    );
   }
 
   filterByCategory(category: string) {
     return this.courses$.pipe(
-      map(courses => courses.filter(c => c.category === category))
-    )
+      map((courses) => courses.filter((c) => c.category === category))
+    );
   }
 
   saveCourse(courseId: number, changes): Observable<any> {
     // Optimistically modifying data in store
     const courses = this.subject.getValue();
-    const idx = courses.findIndex(course => course.id === courseId);
+    const idx = courses.findIndex((course) => course.id === courseId);
     const newCourses = courses.slice(0);
     newCourses[idx] = {
       ...courses[idx],
-      ...changes
-    }
+      ...changes,
+    };
     this.subject.next(newCourses);
 
     // Fetch request returned as Observable
-    return fromPromise(fetch(`/api/courses/${courseId}`, {
-      method: 'PUT',
-      body: JSON.stringify(changes),
-      headers: {
-        'content-type': 'application/json'
-      }
-    }))
+    return fromPromise(
+      fetch(`/api/courses/${courseId}`, {
+        method: "PUT",
+        body: JSON.stringify(changes),
+        headers: {
+          "content-type": "application/json",
+        },
+      })
+    );
   }
 }
