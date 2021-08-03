@@ -21,6 +21,7 @@ import {
   tap,
 } from "rxjs/operators";
 import { fromPromise } from "rxjs/internal-compatibility";
+import { Store } from '../common/store.service';
 
 @Component({
   selector: "course-dialog",
@@ -39,6 +40,7 @@ export class CourseDialogComponent implements AfterViewInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<CourseDialogComponent>,
+    private store: Store,
     @Inject(MAT_DIALOG_DATA) course: Course
   ) {
     this.course = course;
@@ -52,6 +54,14 @@ export class CourseDialogComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {}
+
+  save() {
+    this.store.saveCourse(this.course.id, this.form.value)
+      .subscribe(
+        () => this.close(),
+        err => console.log("Error saving course", err)
+      );
+  }
 
   close() {
     this.dialogRef.close();
